@@ -1,9 +1,7 @@
-#include <iostream>
 #include <vector>
 #include <list>
 #include <map>
 #include <stdexcept>
-#include <set>
 
 template<class KeyType, class ValueType, class Hash = std::hash<KeyType>>
 class HashMap {
