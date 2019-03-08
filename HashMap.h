@@ -10,8 +10,8 @@ public:
     using const_iterator = typename std::list<std::pair<const KeyType, ValueType>>::const_iterator;
     using InitList = std::initializer_list<std::pair<const KeyType, ValueType>>;
 
-    HashMap(const Hash &hshr=Hash()): sz(0), cp(5), hasher(hshr), items(), table() {
-        table.resize(cp);
+    HashMap(const Hash &hshr=Hash()): sz(0), cap(5), hasher(hshr), items(), table() {
+        table.resize(cap);
     }
 
     HashMap(const HashMap &other): HashMap(other.hasher) {
@@ -73,14 +73,14 @@ public:
 
     void insert(const std::pair<const KeyType, ValueType> &elem) {
         put(elem);
-        if (2 * sz > cp) {
+        if (2 * sz > cap) {
             rehash();
         }
     }
 
     void erase(const KeyType &key) {
         del(key);
-        if (!empty() && 8 * sz < cp) {
+        if (!empty() && 8 * sz < cap) {
             rehash(true);
         }
     }
@@ -120,14 +120,14 @@ public:
     }
 
 private:
-    size_t sz, cp;
+    size_t sz, cap;
     Hash hasher;
     std::list<std::pair<const KeyType, ValueType>> items;
     std::vector<std::pair<iterator, size_t>> table; // size_t is for state: 0 - FREE, 1 - FULL, 2 - DELETED
 
     void put(const std::pair<const KeyType, ValueType> &elem) {
-        size_t pos = hasher(elem.first) % cp;
-        for (size_t i = 0; i < cp; ++i) {
+        size_t pos = hasher(elem.first) % cap;
+        for (size_t i = 0; i < cap; ++i) {
             if (table[pos].second != 1) {
                 sz++;
                 items.push_back(elem);
@@ -139,15 +139,15 @@ private:
             }
 
             pos++;
-            if (pos == cp) {
+            if (pos == cap) {
                 pos = 0;
             }
         }
     }
 
     void del(const KeyType &key) {
-        size_t pos = hasher(key) % cp;
-        for (size_t i = 0; i < cp; ++i) {
+        size_t pos = hasher(key) % cap;
+        for (size_t i = 0; i < cap; ++i) {
             if (table[pos].second == 1 && table[pos].first -> first == key) {
                 sz--;
                 items.erase(table[pos].first);
@@ -158,15 +158,15 @@ private:
             }
 
             pos++;
-            if (pos == cp) {
+            if (pos == cap) {
                 pos = 0;
             }
         }
     }
 
     iterator search(const KeyType &key) {
-        size_t pos = hasher(key) % cp;
-        for (size_t i = 0; i < cp; ++i) {
+        size_t pos = hasher(key) % cap;
+        for (size_t i = 0; i < cap; ++i) {
             if (table[pos].second == 1 && table[pos].first -> first == key) {
                 return table[pos].first;
             } else if (table[pos].second == 0) {
@@ -174,7 +174,7 @@ private:
             }
 
             pos++;
-            if (pos == cp) {
+            if (pos == cap) {
                 pos = 0;
             }
         }
@@ -183,8 +183,8 @@ private:
     }
 
     const_iterator search(const KeyType &key) const {
-        size_t pos = hasher(key) % cp;
-        for (size_t i = 0; i < cp; ++i) {
+        size_t pos = hasher(key) % cap;
+        for (size_t i = 0; i < cap; ++i) {
             if (table[pos].second == 1 && table[pos].first -> first == key) {
                 return table[pos].first;
             } else if (table[pos].second == 0) {
@@ -192,7 +192,7 @@ private:
             }
 
             pos++;
-            if (pos == cp) {
+            if (pos == cap) {
                 pos = 0;
             }
         }
@@ -202,13 +202,13 @@ private:
 
     void rehash(bool shrink=false) {
         if (shrink) {
-            cp /= 2;
+            cap /= 2;
         } else {
-            cp = 2 * cp + 1;
+            cap = 2 * cap + 1;
         }
 
         table.clear();
-        table.resize(cp);
+        table.resize(cap);
         size_t tmp = sz;
         for (size_t i = 0; i < tmp; ++i) {
             put(*items.begin());
