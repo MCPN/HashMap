@@ -113,8 +113,8 @@ public:
     }
 
     void clear() {
-        size_t tmp = sz;
-        for (size_t i = 0; i < tmp; ++i) {
+        size_t prev_sz = sz;
+        for (size_t i = 0; i < prev_sz; ++i) {
             erase(items.begin() -> first);
         }
     }
@@ -209,8 +209,8 @@ private:
 
         table.clear();
         table.resize(cap);
-        size_t tmp = sz;
-        for (size_t i = 0; i < tmp; ++i) {
+        size_t prev_sz = sz;
+        for (size_t i = 0; i < prev_sz; ++i) {
             put(*items.begin());
             items.erase(items.begin());
             sz--;
