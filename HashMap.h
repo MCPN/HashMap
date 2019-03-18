@@ -73,14 +73,14 @@ public:
 
     void insert(const std::pair<const KeyType, ValueType> &elem) {
         put(elem);
-        if (2 * sz > cap) {
+        if (MAX_FACTOR * sz > cap) {
             rehash();
         }
     }
 
     void erase(const KeyType &key) {
         del(key);
-        if (!empty() && 8 * sz < cap) {
+        if (!empty() && MIN_FACTOR * sz < cap) {
             rehash(true);
         }
     }
@@ -120,6 +120,7 @@ public:
     }
 
 private:
+    size_t MAX_FACTOR = 2, MIN_FACTOR = 8;
     size_t sz, cap;
     Hash hasher;
     std::list<std::pair<const KeyType, ValueType>> items;
