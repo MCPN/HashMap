@@ -10,7 +10,7 @@ public:
     using const_iterator = typename std::list<std::pair<const KeyType, ValueType>>::const_iterator;
     using InitList = std::initializer_list<std::pair<const KeyType, ValueType>>;
 
-    HashMap(const Hash &hshr=Hash()): sz(0), cap(5), hasher(hshr), items(), table() {
+    HashMap(const Hash &hshr=Hash()): sz(0), cap(START_SIZE), hasher(hshr), items(), table() {
         table.resize(cap);
     }
 
@@ -120,7 +120,7 @@ public:
     }
 
 private:
-    size_t MAX_FACTOR = 2, MIN_FACTOR = 8;
+    size_t MAX_FACTOR = 2, MIN_FACTOR = 8, START_SIZE = 5;
     size_t sz, cap;
     Hash hasher;
     std::list<std::pair<const KeyType, ValueType>> items;
