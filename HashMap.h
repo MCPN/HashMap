@@ -19,7 +19,7 @@ public:
 
     HashMap(const HashMap &other): HashMap(other.hasher) {
         if (this != &other) {
-            for (auto elem : other) {
+            for (const auto elem : other) {
                 insert(elem);
             }
         }
