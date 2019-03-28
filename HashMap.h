@@ -6,12 +6,14 @@
 template<class KeyType, class ValueType, class Hash = std::hash<KeyType>>
 class HashMap {
 public:
-    const static size_t START_SIZE = 5
+    const static size_t START_SIZE = 5;
     const static size_t MAX_LOAD_FACTOR = 2, MIN_LOAD_FACTOR = 8;
     const static size_t EXPAND_FACTOR = 2, SHRINK_FACTOR = 2;
     using iterator = typename std::list<std::pair<const KeyType, ValueType>>::iterator;
     using const_iterator = typename std::list<std::pair<const KeyType, ValueType>>::const_iterator;
     using init_list = std::initializer_list<std::pair<const KeyType, ValueType>>;
+    using items_type = std::list<std::pair<const KeyType, ValueType>>;
+    using table_type = std::vector<std::pair<iterator, size_t>>; // size_t is for state: 0 - FREE, 1 - FULL, 2 - DELETED
 
     HashMap(const Hash &hash_function = Hash()): sz(0), cap(START_SIZE), hasher(hash_function), items(), table() {
         table.resize(cap);
@@ -19,7 +21,7 @@ public:
 
     HashMap(const HashMap &other): HashMap(other.hasher) {
         if (this != &other) {
-            for (const &auto elem : other) {
+            for (const auto &elem : other) {
                 insert(elem);
             }
         }
@@ -34,7 +36,7 @@ public:
     }
 
     HashMap(const init_list &initializer, const Hash &hash_function = Hash()): HashMap(hash_function) {
-        for (const &auto elem : initializer) {
+        for (const auto &elem : initializer) {
             insert(elem);
         }
     }
@@ -43,7 +45,7 @@ public:
         if (this != &other) {
             hasher = other.hasher;
             clear();
-            for (const &auto elem : other) {
+            for (const auto &elem : other) {
                 insert(elem);
             }
         }
@@ -76,18 +78,12 @@ public:
 
     void insert(const std::pair<const KeyType, ValueType> &elem) {
         put(elem);
-        if (MAX_LOAD_FACTOR * sz > cap) {
-            expand();
-            rehash();
-        }
+        check_and_rehash();
     }
 
     void erase(const KeyType &key) {
         del(key);
-        if (!empty() && MIN_LOAD_FACTOR * sz < cap) {
-            shrink();
-            rehash();
-        }
+        check_and_rehash();
     }
 
     iterator find(const KeyType &key) {
@@ -118,17 +114,18 @@ public:
     }
 
     void clear() {
-        size_t prev_sz = sz;
-        for (size_t i = 0; i < prev_sz; ++i) {
-            erase(items.begin()->first);
-        }
+        items.clear();
+        table.clear();
+        table.resize(START_SIZE);
+        sz = 0;
+        cap = START_SIZE;
     }
 
 private:
     size_t sz, cap;
     Hash hasher;
-    std::list<std::pair<const KeyType, ValueType>> items;
-    std::vector<std::pair<iterator, size_t>> table; // size_t is for state: 0 - FREE, 1 - FULL, 2 - DELETED
+    items_type items;
+    table_type table;
 
     void put(const std::pair<const KeyType, ValueType> &elem) {
         size_t pos = hasher(elem.first) % cap;
@@ -205,22 +202,27 @@ private:
         return end();
     }
 
-    void expand() {
-        cap = EXPAND_FACTOR * cap + 1;
-    }
+    void check_and_rehash() {
+        size_t prev_cap = cap;
+        if (MAX_LOAD_FACTOR * sz > cap) {
+            cap = EXPAND_FACTOR * cap + 1;
+        } else if (MIN_LOAD_FACTOR * sz < cap) {
+            cap /= SHRINK_FACTOR;
+            if (cap < START_SIZE) {
+                cap = START_SIZE;
+            }
+        }
+        if (prev_cap == cap) {
+            return;
+        }
 
-    void shrink() {
-        cap /= SHRINK_FACTOR;
-    }
-
-    void rehash() {
+        items_type new_items = items;
+        items.clear();
         table.clear();
         table.resize(cap);
-        size_t prev_sz = sz;
-        for (size_t i = 0; i < prev_sz; ++i) {
-            put(*items.begin());
-            items.erase(items.begin());
-            sz--;
+        sz = 0;
+        for (const auto &elem : new_items) {
+            put(elem);
         }
     }
 };
