@@ -19,7 +19,7 @@ public:
 
     HashMap(const HashMap &other): HashMap(other.hasher) {
         if (this != &other) {
-            for (const auto elem : other) {
+            for (const &auto elem : other) {
                 insert(elem);
             }
         }
@@ -34,7 +34,7 @@ public:
     }
 
     HashMap(const init_list &initializer, const Hash &hash_function = Hash()): HashMap(hash_function) {
-        for (const auto elem : initializer) {
+        for (const &auto elem : initializer) {
             insert(elem);
         }
     }
@@ -43,7 +43,7 @@ public:
         if (this != &other) {
             hasher = other.hasher;
             clear();
-            for (const auto elem : other) {
+            for (const &auto elem : other) {
                 insert(elem);
             }
         }
